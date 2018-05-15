@@ -11,7 +11,7 @@ public class Node implements Serializable {
 	private String ip;
 	private int port;
 	private BigInteger id;
-	private Node successor, predecessor;
+	private BigInteger successor, predecessor;
 	private boolean largest = false;
 	public Node (String ip, int port) {
 		this.ip = ip;
@@ -19,9 +19,13 @@ public class Node implements Serializable {
 		createNodeID();
 	}
 	
+	public Node(BigInteger id) {
+		this.id = id;
+	}
+	
 	public void create() {
-		successor = this;
-		predecessor = this;
+		successor = this.id;
+		predecessor = this.id;
 	}
 	
 	private void createNodeID(){
@@ -48,72 +52,6 @@ public class Node implements Serializable {
 		
 	}
 	
-	public Node findSuccessor(Node n) {
-		
-		BigInteger idN = n.getID();
-		System.out.println("idN = "+idN);
-		BigInteger idSuccessor = successor.getID();
-		
-		System.out.println("idSuccessor = "+idSuccessor);
-		System.out.println("id = "+id);
-		if(isIDNinRange(idN, idSuccessor)) {
-			if(-1 == idSuccessor.compareTo(idN)) {
-				System.out.println("idSuccessor < idN");
-				
-				if(largest) {
-					System.out.println("will return "+successor.getID());
-					return successor;
-				}else {
-					System.out.println("will return "+successor.getSuccessor().getID());
-					return successor.getSuccessor();
-				}
-			}else {
-				System.out.println("will return "+successor.getID());
-				System.out.println("idSuccessor >= idN");
-				return successor;
-			}
-		}else {
-			Node tmp = closestPreceedingNode();
-			return tmp.findSuccessor(n);
-		}
-	}
-	
-	private boolean isIDNinRange (BigInteger idN, BigInteger idSuccessor){
-		
-		if(-1 == id.compareTo(idSuccessor)) {
-			System.out.println("id < idSuccessor");
-			if(1== idN.compareTo(id) && (-1 == idN.compareTo(idSuccessor) ||
-					0 == idN.compareTo(idSuccessor))) {
-				return true;
-			}
-		}else if(1 == id.compareTo(idSuccessor)) {
-			System.out.println("id > idSuccessor");
-			BigInteger temp = id.mod(idN);
-			System.out.println("temp = "+temp);
-			if(-1 == temp.compareTo(idSuccessor)) {
-				System.out.println("temp < idSuccessor");
-				largest = false;
-				return true;
-			}else {
-				System.out.println("set largest");
-				largest = true;
-				return true;
-			}
-			
-		}else if(0 == id.compareTo(idSuccessor)) {
-			/*if(1 == idN.compareTo(id)) {
-				
-			}else if(-1 == idN.compareTo(id)) {
-				return true;
-			}*/
-			return true;
-		}
-		return false;
-	}
-	
-	private Node closestPreceedingNode() {
-		return successor;
-	}
 	public void setID(BigInteger id) {
 		this.id = id;
 	}
@@ -130,19 +68,19 @@ public class Node implements Serializable {
 		return ip;
 	}
 	
-	public Node getSuccessor() {
+	public BigInteger getSuccessor() {
 		return successor;
 	}
 	
-	public void setSuccessor(Node successor) {
+	public void setSuccessor(BigInteger successor) {
 		this.successor = successor;
 	} 
 	
-	public Node getPredecessor() {
+	public BigInteger getPredecessor() {
 		return predecessor;
 	}
 	
-	public void setPredecessor(Node predecessor) {
+	public void setPredecessor(BigInteger predecessor) {
 		this.predecessor = predecessor;
 	} 
 	

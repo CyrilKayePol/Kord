@@ -1,6 +1,7 @@
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.math.BigInteger;
 import java.net.*;
 
 /* continue on updating predecessor and successor*/
@@ -13,10 +14,14 @@ public class Protocol {
 	private InetAddress ip;
 	private DatagramSocket socket;
 	private Node myNode;
-	public Protocol(DatagramSocket socket) {
+	private String hostIP;
+	private int hostPort;
+	public Protocol(DatagramSocket socket, String hostIP, int hostPort) {
 		this.socket = socket;
 		output = null;
 		myNode = null;
+		this.hostIP = hostIP;
+		this.hostPort = hostPort;
 	}
 	
 	public void protocolProcedure(Object input) {
@@ -27,51 +32,62 @@ public class Protocol {
 			
 			if(m.getMsg().equals("start")) {
 				 myNode= m.getNode();
-				System.out.println("asking for random node from host");
+				//System.out.println("asking for random node from host");
 				m = new Message(myNode, "init");
 				output = m;
 				send();
 			}else if(m.getMsg().equals("init")){
 				Node temp = m.getNode();
 				// send random object
-				System.out.println("[a peer asks for random node]");
+				//System.out.println("[a peer asks for random node]");
 				Host.addNewMember(temp);
 				m = new Message(Host.getRandomNode(), "random node");
 				output = m;
 				send();
-				System.out.println("[sent a random node "+m.getNode().getID()+"]");
+				//System.out.println("[sent a random node "+m.getNode().getID()+"]");
 				
 				
 			}else if(m.getMsg().equals("random node")) {
 				n = m.getNode();
-				System.out.println("received random node with "+n.getID());
+				//System.out.println("received random node with "+n.getID());
 				/*upon receiving a random node, ask for the real copy
 				 * of the random node because the node passed by the host
 				 * is not updated since only the basic info are needed by the host
 				 * , updating would be just a wasteoftime :)*/
 				
 				sendSetup(n, myNode, "request for real node");
-				System.out.println("sent a request for real node of "+n.getID());
+				//System.out.println("sent a request for real node of "+n.getID());
 			}else if(m.getMsg().equals("request for real node")) {
 				
 				n = m.getNode();
-				System.out.println("received a request for my node from "+n.getID());
+				//System.out.println("received a request for my node from "+n.getID());
 				sendSetup(n, myNode, "real node");
-				System.out.println("sent my real node");
-			}else if(m.getMsg().equals("real node")) {
-				n = m.getNode();
-				System.out.println("received the real node from "+n.getID());
-				System.out.println("***\nport = "+n.getPort()+"\nid ="+n.getID()+
-						"\nsuc = "+n.getSuccessor().getID()+"\npre = "+n.getPredecessor().getID()+"\n***");
-			
-				findSuccessor(n);
+				//System.out.println("sent my real node");
 			}else if(m.getMsg().equals("update your myNode info")) {
-				System.out.println("ABOUT TO UPDATE MYNODE INFO");
-				Node temp = myNode.getPredecessor();
-				sendSetup(temp,myNode,"request for updated predecessor");
+				//System.out.println("ABOUT TO UPDATE MYNODE INFO");
+				
+				BigInteger temp = myNode.getPredecessor();
+				setReceiverIP(hostIP);
+				setReceiverPort(hostPort);
+				output = new Message(myNode, "asking for node of id_"+temp+"_updated predecessor");
+				send();
 				
 				temp = myNode.getSuccessor();
-				sendSetup(temp, myNode, "request for updated successor");
+				output = new Message(myNode, "asking for node of id_"+temp+"_updated successor");
+				send();
+			
+			}else if(m.getMsg().equals("node of id_updated predecessor")){
+				n = m.getNode();
+				sendSetup(n,myNode,"request for updated predecessor");
+			}else if(m.getMsg().equals("node of id_updated successor")){
+				n = m.getNode();
+				sendSetup(n,myNode,"request for updated successor");
+			}else if(m.getMsg().equals("node of id_predecessor")) {
+				n = m.getNode();
+				sendSetup(n, myNode, "update predecessor");
+			}else if(m.getMsg().equals("node of id_successor")) {
+				n = m.getNode();
+				sendSetup(n, myNode, "update successor");
 			}
 		}
 		
@@ -120,7 +136,7 @@ public class Protocol {
 		this.output = output;
 	}
 	private void findSuccessor(Node rand) {
-		Node successor = rand.findSuccessor(myNode);
+		Node successor = null;//rand.findSuccessor(myNode);
 		notifyMyNode(successor);
 		notifySuccessor(successor);
 	}
