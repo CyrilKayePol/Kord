@@ -16,40 +16,17 @@ public class Node implements Serializable {
 	public Node (String ip, int port) {
 		this.ip = ip;
 		this.port = port;
-		createNodeID();
 	}
 	
-	public Node(BigInteger id) {
+	public Node(BigInteger id, String ip, int port) {
 		this.id = id;
+		this.ip = ip;
+		this.port = port;
 	}
 	
 	public void create() {
 		successor = this.id;
 		predecessor = this.id;
-	}
-	
-	private void createNodeID(){
-		String text = getIP()+""+port;
-		MessageDigest digest;
-		byte[] hash = null;
-		try {
-			digest = MessageDigest.getInstance("SHA-1");
-			hash = digest.digest(text.getBytes(StandardCharsets.UTF_8));
-		} catch (Exception e) {
-			
-			e.printStackTrace();
-		}
-		
-		StringBuffer hex = new StringBuffer();
-		
-		for(int i = 0; i< hash.length; i++) {
-			String s = Integer.toHexString(0xff & hash[i]);
-			if(hex.length() == 1) hex.append('0');
-			hex.append(s);
-		}
-		
-		this.id = new BigInteger(hex.toString(),16);
-		
 	}
 	
 	public void setID(BigInteger id) {
